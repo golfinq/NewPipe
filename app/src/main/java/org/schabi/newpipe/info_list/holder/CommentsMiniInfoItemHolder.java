@@ -10,26 +10,34 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.error.ErrorActivity;
 import org.schabi.newpipe.extractor.InfoItem;
+import org.schabi.newpipe.extractor.comments.CommentReplyExtractor;
 import org.schabi.newpipe.extractor.comments.CommentsInfoItem;
+import org.schabi.newpipe.extractor.exceptions.ParsingException;
+import org.schabi.newpipe.extractor.utils.Utils;
 import org.schabi.newpipe.info_list.InfoItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.util.CommentTextOnTouchListener;
 import org.schabi.newpipe.util.DeviceUtils;
+import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.ImageDisplayConstants;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.external_communication.ShareUtils;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private static final int COMMENT_DEFAULT_LINES = 2;
@@ -46,6 +54,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private final TextView itemLikesCountView;
     private final TextView itemDislikesCountView;
     private final TextView itemPublishedTime;
+    private final TextView showReplies;
 
     private String commentText;
     private String streamUrl;
@@ -80,6 +89,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
         itemDislikesCountView = itemView.findViewById(R.id.detail_thumbs_down_count_view);
         itemPublishedTime = itemView.findViewById(R.id.itemPublishedTime);
         itemContentView = itemView.findViewById(R.id.itemCommentContentView);
+        showReplies = itemView.findViewById(R.id.ShowReplies);
 
         downloadThumbnailKey = infoItemBuilder.getContext().
                 getString(R.string.download_thumbnail_key);
@@ -168,6 +178,35 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
             }
             return true;
         });
+
+        final CommentReplyExtractor itemReplies = item.getReplies();
+        try {
+            if ((itemReplies != null) && !Utils.isNullOrEmpty(itemReplies.getUrl())) {
+                showReplies.setVisibility(View.VISIBLE);
+                showReplies.setText("Show Replies");
+                showReplies.setOnClickListener(view -> {
+                    try {
+                        ExtractorHelper.getCommentReplies(itemReplies).subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe((@NonNull List<CommentsInfoItem> allReplies) -> {
+                                    final String replyText = allReplies.get(0).getUploaderName()
+                                            + " : "  + allReplies.get(0).getCommentText();
+                                    showReplies.setText(replyText);
+                                }, (@NonNull Throwable throwable) -> {
+                                    throw throwable;
+                                });
+                    } catch (final Exception e) {
+                        showReplies.setText("");
+                        showReplies.setVisibility(View.GONE);
+                    }
+                });
+            } else {
+                showReplies.setText("");
+                showReplies.setVisibility(View.GONE);
+            }
+        } catch (final ParsingException e) {
+            //Pass; we don't care if this fails
+        }
     }
 
     private void openCommentAuthor(final CommentsInfoItem item) {

@@ -92,4 +92,17 @@
         android:textSize="@dimen/video_item_search_upload_date_text_size"
         tools:text="1 year ago" />
 
+    <TextView
+        android:id="@+id/ShowReplies"
+        android:layout_width="205dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/itemCommentContentView"
+        android:layout_marginLeft="12dp"
+        android:layout_toRightOf="@id/itemPublishedTime"
+        android:lines="1"
+        android:text="Show Replies"
+        android:textAlignment="inherit"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/video_item_search_upload_date_text_size" />
+
 </RelativeLayout>
