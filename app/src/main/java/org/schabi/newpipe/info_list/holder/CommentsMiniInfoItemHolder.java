@@ -5,13 +5,14 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.preference.PreferenceManager;
 
 import org.schabi.newpipe.R;
@@ -21,23 +22,20 @@ import org.schabi.newpipe.extractor.comments.CommentReplyExtractor;
 import org.schabi.newpipe.extractor.comments.CommentsInfoItem;
 import org.schabi.newpipe.extractor.exceptions.ParsingException;
 import org.schabi.newpipe.extractor.utils.Utils;
+import org.schabi.newpipe.fragments.list.comments.CommentsReplyFragment;
 import org.schabi.newpipe.info_list.InfoItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.util.CommentTextOnTouchListener;
 import org.schabi.newpipe.util.DeviceUtils;
-import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.ImageDisplayConstants;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.external_communication.ShareUtils;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private static final int COMMENT_DEFAULT_LINES = 2;
@@ -55,6 +53,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private final TextView itemDislikesCountView;
     private final TextView itemPublishedTime;
     private final TextView showReplies;
+    private final FragmentContainerView repliesHolder;
 
     private String commentText;
     private String streamUrl;
@@ -90,6 +89,8 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
         itemPublishedTime = itemView.findViewById(R.id.itemPublishedTime);
         itemContentView = itemView.findViewById(R.id.itemCommentContentView);
         showReplies = itemView.findViewById(R.id.ShowReplies);
+        repliesHolder = itemView.findViewById(R.id.RepliesHolder);
+
 
         downloadThumbnailKey = infoItemBuilder.getContext().
                 getString(R.string.download_thumbnail_key);
@@ -186,27 +187,38 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
                 showReplies.setText("Show Replies");
                 showReplies.setOnClickListener(view -> {
                     try {
-                        ExtractorHelper.getCommentReplies(itemReplies).subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((@NonNull List<CommentsInfoItem> allReplies) -> {
-                                    final String replyText = allReplies.get(0).getUploaderName()
-                                            + " : "  + allReplies.get(0).getCommentText();
-                                    showReplies.setText(replyText);
-                                }, (@NonNull Throwable throwable) -> {
-                                    throw throwable;
-                                });
-                    } catch (final Exception e) {
-                        showReplies.setText("");
-                        showReplies.setVisibility(View.GONE);
+                        createAndAddReplyFragment(itemReplies);
+                    } catch (final ParsingException e) {
+
                     }
                 });
             } else {
                 showReplies.setText("");
                 showReplies.setVisibility(View.GONE);
             }
-        } catch (final ParsingException e) {
+        } catch (final Exception e) {
             //Pass; we don't care if this fails
         }
+    }
+
+    private void createAndAddReplyFragment(final CommentReplyExtractor replyExtractor)
+            throws ParsingException {
+        //repliesHolder;
+        repliesHolder.setVisibility(View.VISIBLE);
+        final LayoutInflater layoutInflater = LayoutInflater.from(repliesHolder.getContext());
+        final CommentsReplyFragment replyFragment
+                = CommentsReplyFragment.getInstance(replyExtractor);
+        replyFragment.
+
+        final View replyFragmentView = replyFragment.onCreateView(layoutInflater,
+                repliesHolder,
+                null);
+
+
+        repliesHolder.addView(replyFragmentView);
+        replyFragment.startLoading(true);
+        replyFragment.hideLoading();
+
     }
 
     private void openCommentAuthor(final CommentsInfoItem item) {
