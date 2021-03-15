@@ -58,6 +58,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private final TextView itemDislikesCountView;
     private final TextView itemPublishedTime;
     private final TextView showReplies;
+    private final TextView scrollDown;
     private final MaxHeightScrollView repliesHolder;
     private final RelativeLayout repliesLayout;
 
@@ -65,6 +66,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private String streamUrl;
     private int repliesLayoutId;
     private boolean downloadedReplies = false;
+    private boolean isReply = false;
 
     private final Linkify.TransformFilter timestampLink = new Linkify.TransformFilter() {
         @Override
@@ -96,7 +98,8 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
         itemDislikesCountView = itemView.findViewById(R.id.detail_thumbs_down_count_view);
         itemPublishedTime = itemView.findViewById(R.id.itemPublishedTime);
         itemContentView = itemView.findViewById(R.id.itemCommentContentView);
-        showReplies = itemView.findViewById(R.id.ShowReplies);
+        showReplies = itemView.findViewById(R.id.showReplies);
+        scrollDown = itemView.findViewById(R.id.scrollDown);
         repliesHolder = itemView.findViewById(R.id.RepliesHolder);
         repliesLayout = itemView.findViewById(R.id.RepliesLayout);
 
@@ -193,7 +196,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
         try {
             if ((itemReplies != null) && !Utils.isNullOrEmpty(itemReplies.getUrl())) {
                 showReplies.setVisibility(View.VISIBLE);
-                showReplies.setText("Show Replies");
+                showReplies.setText("Show Replies                                      ");
                 repliesLayoutId = View.generateViewId();
                 repliesLayout.setId(repliesLayoutId);
                 showReplies.setOnClickListener(view -> {
@@ -202,6 +205,9 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
                     } catch (final ParsingException e) {
 
                     }
+                });
+                scrollDown.setOnClickListener(view -> {
+                    repliesHolder.scrollBy(0,700);
                 });
             } else {
                 showReplies.setText("");
@@ -226,8 +232,11 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
             itemView.findViewById(replyFragment.getId()).setId(newViewId);
             repliesLayoutId = newViewId;
             downloadedReplies = true;
-        } else {
-            repliesHolder.setVisibility(View.VISIBLE);
+            showReplies.setText("Scroll Up");
+            scrollDown.setText("Scroll Down");
+            downloadedReplies = true;
+        } else{
+            repliesHolder.scrollBy(0,-700);
         }
     }
 

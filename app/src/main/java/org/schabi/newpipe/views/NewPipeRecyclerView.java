@@ -219,4 +219,5 @@ public class NewPipeRecyclerView extends RecyclerView {
     private boolean isOutside(final View view) {
         return findContainingItemView(view) == null;
     }
+
 }
