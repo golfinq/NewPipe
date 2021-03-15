@@ -129,8 +129,7 @@ checkstyle {
 
 task runCheckstyle(type: Checkstyle) {
     source 'src'
-    //include '**/*.java'
-    exclude '**/*.*'
+    include '**/*.java'
     exclude '**/gen/**'
     exclude '**/R.java'
     exclude '**/BuildConfig.java'

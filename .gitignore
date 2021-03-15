@@ -1,7 +1,5 @@
 .gitignore
 .gradle
-settings.gradle
-setting.gradle
 /local.properties
 .DS_Store
 /build
