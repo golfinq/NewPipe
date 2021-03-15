@@ -42,6 +42,8 @@ import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private static final int COMMENT_DEFAULT_LINES = 2;
     private static final int COMMENT_EXPANDED_LINES = 1000;
@@ -196,7 +198,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
         try {
             if ((itemReplies != null) && !Utils.isNullOrEmpty(itemReplies.getUrl())) {
                 showReplies.setVisibility(View.VISIBLE);
-                showReplies.setText("Show Replies                                      ");
+                showReplies.setText("Show Replies");
                 repliesLayoutId = View.generateViewId();
                 repliesLayout.setId(repliesLayoutId);
                 showReplies.setOnClickListener(view -> {
@@ -207,7 +209,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
                     }
                 });
                 scrollDown.setOnClickListener(view -> {
-                    repliesHolder.scrollBy(0,700);
+                    repliesHolder.scrollBy(0, 700);
                 });
             } else {
                 showReplies.setText("");
@@ -234,9 +236,13 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
             downloadedReplies = true;
             showReplies.setText("Scroll Up");
             scrollDown.setText("Scroll Down");
+            final ViewGroup.LayoutParams params
+                    = (ViewGroup.LayoutParams) showReplies.getLayoutParams();
+            params.width = WRAP_CONTENT;
+            showReplies.setLayoutParams(params);
             downloadedReplies = true;
-        } else{
-            repliesHolder.scrollBy(0,-700);
+        } else {
+            repliesHolder.scrollBy(0, -700);
         }
     }
 
