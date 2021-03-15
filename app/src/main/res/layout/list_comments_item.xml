@@ -125,14 +125,23 @@
         android:textSize="@dimen/video_item_search_upload_date_text_size" />
 
 
-    <androidx.fragment.app.FragmentContainerView
+    <org.schabi.newpipe.views.MaxHeightScrollView
         android:id="@+id/RepliesHolder"
         android:layout_width="match_parent"
-        android:layout_height="111dp"
+        android:layout_height="wrap_content"
         android:layout_below="@id/ShowReplies"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
+        android:layout_marginEnd="12dp"
         android:isScrollContainer="true"
         android:scrollbars="vertical"
-        android:visibility="gone" />
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:id="@+id/RepliesLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </RelativeLayout>
+    </org.schabi.newpipe.views.MaxHeightScrollView>
 </RelativeLayout>

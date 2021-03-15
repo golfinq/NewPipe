@@ -78,21 +78,6 @@ public class CommentsReplyFragment extends CommentsFragment {
     // Contract
     //////////////////////////////////////////////////////////////////////////*/
 
-    @Override
-    public void showLoading() {
-        //Do nothing
-    }
-
-    @Override
-    public void hideLoading() {
-        //Do nothing
-    }
-
-    @Override
-    public void showListFooter(final boolean show) {
-        //Do nothing
-    }
-
 
     @Override
     public void handleNextItems(final ListExtractor.InfoItemsPage result) {

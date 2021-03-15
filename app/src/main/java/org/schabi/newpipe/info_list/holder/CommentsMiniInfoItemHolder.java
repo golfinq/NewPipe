@@ -5,14 +5,14 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 
 import org.schabi.newpipe.R;
@@ -30,7 +30,12 @@ import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.ImageDisplayConstants;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
+<<<<<<< HEAD
 import org.schabi.newpipe.util.external_communication.ShareUtils;
+=======
+import org.schabi.newpipe.util.ShareUtils;
+import org.schabi.newpipe.views.MaxHeightScrollView;
+>>>>>>> Extracts and shows replies inside a new view called "MaxHeightScrollView"
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,10 +58,13 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
     private final TextView itemDislikesCountView;
     private final TextView itemPublishedTime;
     private final TextView showReplies;
-    private final FragmentContainerView repliesHolder;
+    private final MaxHeightScrollView repliesHolder;
+    private final RelativeLayout repliesLayout;
 
     private String commentText;
     private String streamUrl;
+    private int repliesLayoutId;
+    private boolean downloadedReplies = false;
 
     private final Linkify.TransformFilter timestampLink = new Linkify.TransformFilter() {
         @Override
@@ -90,6 +98,7 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
         itemContentView = itemView.findViewById(R.id.itemCommentContentView);
         showReplies = itemView.findViewById(R.id.ShowReplies);
         repliesHolder = itemView.findViewById(R.id.RepliesHolder);
+        repliesLayout = itemView.findViewById(R.id.RepliesLayout);
 
 
         downloadThumbnailKey = infoItemBuilder.getContext().
@@ -185,6 +194,8 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
             if ((itemReplies != null) && !Utils.isNullOrEmpty(itemReplies.getUrl())) {
                 showReplies.setVisibility(View.VISIBLE);
                 showReplies.setText("Show Replies");
+                repliesLayoutId = View.generateViewId();
+                repliesLayout.setId(repliesLayoutId);
                 showReplies.setOnClickListener(view -> {
                     try {
                         createAndAddReplyFragment(itemReplies);
@@ -203,22 +214,21 @@ public class CommentsMiniInfoItemHolder extends InfoItemHolder {
 
     private void createAndAddReplyFragment(final CommentReplyExtractor replyExtractor)
             throws ParsingException {
-        //repliesHolder;
-        repliesHolder.setVisibility(View.VISIBLE);
-        final LayoutInflater layoutInflater = LayoutInflater.from(repliesHolder.getContext());
-        final CommentsReplyFragment replyFragment
-                = CommentsReplyFragment.getInstance(replyExtractor);
-        replyFragment.
+        if (!downloadedReplies) {
+            final CommentsReplyFragment replyFragment
+                    = CommentsReplyFragment.getInstance(replyExtractor);
 
-        final View replyFragmentView = replyFragment.onCreateView(layoutInflater,
-                repliesHolder,
-                null);
-
-
-        repliesHolder.addView(replyFragmentView);
-        replyFragment.startLoading(true);
-        replyFragment.hideLoading();
-
+            final AppCompatActivity repliesAct = (AppCompatActivity) repliesHolder.getContext();
+            final FragmentManager repMan = repliesAct.getSupportFragmentManager();
+            final FragmentTransaction addRep = repMan.beginTransaction();
+            addRep.replace(repliesLayoutId, replyFragment).commitNowAllowingStateLoss();
+            final int newViewId = View.generateViewId();
+            itemView.findViewById(replyFragment.getId()).setId(newViewId);
+            repliesLayoutId = newViewId;
+            downloadedReplies = true;
+        } else {
+            repliesHolder.setVisibility(View.VISIBLE);
+        }
     }
 
     private void openCommentAuthor(final CommentsInfoItem item) {
